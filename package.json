@@ -1,0 +1,21 @@
+{
+  "name": "@quenk/wml-runtime",
+  "version": "0.0.1",
+  "description": "Runtime for compiled wml files.",
+  "main": "src/index.js",
+  "types":"src/index.d.ts",
+  "scripts": {
+    "build": "./node_modules/.bin/tsc --sourceMap --project src"
+  },
+  "keywords": [
+    "wml"
+  ],
+  "author": "Lasana Murray <info@quenk.com> (http://quenk.com)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "property-seek": "^3.0.9"
+  },
+  "devDependencies": {
+    "typescript": "^2.4.2"
+  }
+}
