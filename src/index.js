@@ -1,6 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_seek_1 = require("property-seek");
+var property = require("property-seek");
+;
+var Component = (function () {
+    function Component(attributes, children) {
+        this.attributes = attributes;
+        this.children = children;
+    }
+    Component.prototype.rendered = function () { };
+    Component.prototype.removed = function () { };
+    Component.prototype.render = function () { return this.view.render(); };
+    return Component;
+}());
+exports.Component = Component;
 ;
 /**
  * Attributes provides an API for reading the
@@ -20,18 +32,33 @@ var Attributes = (function () {
      * @param {*} defaultValue - This value is returned if the value is not set.
      */
     Attributes.prototype.read = function (path, defaultValue) {
-        var ret = property_seek_1.property(path.split(':').join('.'), this._attrs);
+        var ret = property(path.split(':').join('.'), this._attrs);
         return (ret != null) ? ret : (defaultValue != null) ? defaultValue : '';
     };
     return Attributes;
 }());
+exports.Attributes = Attributes;
 var adopt = function (child, e) {
-    if (Array.isArray(child))
+    if (child instanceof Array)
         return child.forEach(function (innerChild) { return adopt(innerChild, e); });
     if (child)
         e.appendChild((typeof child === 'object') ?
             child : document.createTextNode(child == null ? '' : child));
 };
+var _textOrNode = function (c) { return (typeof c !== 'object') ?
+    document.createTextNode('' + (c == null ? '' : c)) : c; };
+exports.box = function (list) {
+    if (list.length === 1) {
+        return _textOrNode(list[0]);
+    }
+    else {
+        var frag_1 = document.createDocumentFragment();
+        list.forEach(function (c) { return frag_1.appendChild(_textOrNode(c)); });
+        return frag_1;
+    }
+};
+var _empty = document.createDocumentFragment();
+exports.empty = function () { return _empty; };
 /**
  * text
  */
@@ -45,7 +72,7 @@ exports.text = function (value) {
 exports.resolve = function (head, path) {
     if ((head == null) || head == '')
         return '';
-    var ret = property_seek_1.property(path, head);
+    var ret = property(path, head);
     return (ret == null) ? '' : ret;
 };
 /**
@@ -83,7 +110,7 @@ exports.node = function (tag, attributes, children, view) {
 exports.widget = function (Constructor, attributes, children, view) {
     var childs = [];
     var w;
-    children.forEach(function (child) { return Array.isArray(child) ?
+    children.forEach(function (child) { return (child instanceof Array) ?
         childs.push.apply(childs, child) : childs.push(child); });
     w = new Constructor(new Attributes(attributes), childs);
     if (attributes['wml'])
@@ -100,19 +127,23 @@ exports.ifE = function (predicate, positive, negative) {
 };
 /**
  * forE provides a for expression
- * @param {Iterable} collection
- * @param {function} cb
  */
 exports.forE = function (collection, cb, cb2) {
+    var frag = document.createDocumentFragment();
     if (collection instanceof Array) {
-        return collection.length > 0 ? collection.map(cb) : cb2();
+        if (collection.length > 0)
+            collection.forEach(function (v, k, a) { return frag.appendChild(cb(v, k, a)); });
+        else
+            frag.appendChild(cb2());
     }
     else if (typeof collection === 'object') {
         var l = Object.keys(collection);
-        return (l.length > 0) ?
-            l.map(function (key, _, all) { return cb(collection[key], key, all); }) : cb2;
+        if (l.length > 0)
+            l.forEach(function (k) { return frag.appendChild(cb(collection[k], k, collection)); });
+        else
+            frag.appendChild(cb2());
     }
-    return [];
+    return frag;
 };
 /**
  * switchE simulates a switch statement

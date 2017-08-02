@@ -1,10 +1,13 @@
-import { property } from 'property-seek';
+import * as property from 'property-seek';
 
-export type Content = Node | Element | HTMLElement;
+export type Content
+    = Node
+    | Element
+    | HTMLElement;
 
 export interface ContentProvider {
 
-    (): Content[]
+    (): Content
 
 }
 
@@ -30,6 +33,20 @@ export interface Widget extends Renderable {
 
 };
 
+export class Component implements Widget {
+
+    view: View;
+
+    constructor(public attributes: Attributes, public children: Content[]) { }
+
+    rendered(): void { }
+
+    removed(): void { }
+
+    render(): Content { return this.view.render(); }
+
+};
+
 export interface AttributeMap<A> {
 
     [key: string]: A
@@ -41,7 +58,7 @@ export interface AttributeMap<A> {
  * attributes supplied to an Element.
  * @param {object} attrs
  */
-class Attributes {
+export class Attributes {
 
     constructor(public _attrs: any) { }
 
@@ -66,9 +83,9 @@ class Attributes {
 }
 
 
-const adopt = (child, e) => {
+const adopt = (child: Content, e: Node): void => {
 
-    if (Array.isArray(child))
+    if (child instanceof Array)
         return child.forEach(innerChild => adopt(innerChild, e));
 
     if (child)
@@ -77,6 +94,29 @@ const adopt = (child, e) => {
                 child : document.createTextNode(child == null ? '' : child));
 
 };
+
+const _textOrNode = c => (typeof c !== 'object') ?
+    document.createTextNode('' + (c == null ? '' : c)) : c;
+
+export const box = (list: Content[]): Content => {
+
+    if (list.length === 1) {
+
+        return _textOrNode(list[0]);
+
+    } else {
+
+        let frag = document.createDocumentFragment();
+        list.forEach(c => frag.appendChild(_textOrNode(c)));
+        return frag;
+
+    }
+
+};
+
+const _empty = document.createDocumentFragment();
+
+export const empty = () => _empty;
 
 /**
  * text
@@ -147,7 +187,7 @@ export const widget =
         var childs = [];
         var w;
 
-        children.forEach(child => Array.isArray(child) ?
+        children.forEach(child => (child instanceof Array) ?
             childs.push.apply(childs, child) : childs.push(child));
 
         w = new Constructor(new Attributes(attributes), childs);
@@ -164,7 +204,7 @@ export const widget =
 /**
  * ifE provides an if then expression
  */
-export const ifE = <P>(predicate: P, positive: () => Content[], negative: () => Content[]) =>
+export const ifE = <P>(predicate: P, positive: () => Content, negative: () => Content) =>
     (predicate) ? positive() : negative();
 
 
@@ -172,31 +212,39 @@ type Iterable<V> = V[] | object;
 
 export interface ForECallback<V> {
 
-    (value: V, index: string | number, source: V[] | object): void;
+    (value: V, index: string | number, source: V[] | object): Content;
 
 }
 
 /**
  * forE provides a for expression
- * @param {Iterable} collection
- * @param {function} cb
  */
-export const forE = <V>(collection: Iterable<V>, cb: ForECallback<V>, cb2: ContentProvider) => {
+export const forE = <V>(
+    collection: Iterable<V>,
+    cb: ForECallback<V>,
+    cb2: ContentProvider): Content => {
+
+    var frag = document.createDocumentFragment();
 
     if (collection instanceof Array) {
 
-        return collection.length > 0 ? collection.map(cb) : cb2();
+        if (collection.length > 0)
+            collection.forEach((v, k, a) => frag.appendChild(cb(v, k, a)));
+        else
+            frag.appendChild(cb2());
 
     } else if (typeof collection === 'object') {
 
         var l = Object.keys(collection);
 
-        return (l.length > 0) ?
-            l.map((key, _, all) => cb(collection[key], key, all)) : cb2;
+        if (l.length > 0)
+            l.forEach(k => frag.appendChild(cb(collection[k], k, collection)));
+        else
+            frag.appendChild(cb2());
 
     }
 
-    return [];
+    return frag;
 
 }
 
