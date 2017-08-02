@@ -14,7 +14,7 @@
   "author": "Lasana Murray <info@quenk.com> (http://quenk.com)",
   "license": "Apache-2.0",
   "dependencies": {
-    "property-seek": "^3.0.9"
+    "property-seek": "^3.0.13"
   },
   "devDependencies": {
     "typescript": "^2.4.2"

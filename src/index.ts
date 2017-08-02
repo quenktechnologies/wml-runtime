@@ -1,4 +1,4 @@
-import * as property from 'property-seek';
+import property from 'property-seek';
 
 export type Content
     = Node
@@ -8,6 +8,12 @@ export type Content
 export interface ContentProvider {
 
     (): Content
+
+}
+
+export interface Macro<P> {
+
+    (view: View, ...p: P[]): Content
 
 }
 
@@ -33,11 +39,11 @@ export interface Widget extends Renderable {
 
 };
 
-export class Component implements Widget {
+export class Component<A> implements Widget {
 
     view: View;
 
-    constructor(public attributes: Attributes, public children: Content[]) { }
+    constructor(public attributes: Attributes<A>, public children: Content[]) { }
 
     rendered(): void { }
 
@@ -53,14 +59,24 @@ export interface AttributeMap<A> {
 
 }
 
+export interface Attrs {
+
+    wml?: {
+
+        id?: string
+
+    },
+    html: AttributeMap<string | number | boolean | Function>
+
+}
+
 /**
  * Attributes provides an API for reading the
  * attributes supplied to an Element.
- * @param {object} attrs
  */
-export class Attributes {
+export class Attributes<A> {
 
-    constructor(public _attrs: any) { }
+    constructor(public attrs: A) { }
 
     has(path: string): boolean {
 
@@ -75,7 +91,7 @@ export class Attributes {
      */
     read<A>(path: string, defaultValue?: A): A {
 
-        var ret = property(path.split(':').join('.'), this._attrs);
+        var ret = property(path.split(':').join('.'), this.attrs);
         return (ret != null) ? ret : (defaultValue != null) ? defaultValue : '';
 
     }
@@ -95,8 +111,23 @@ const adopt = (child: Content, e: Node): void => {
 
 };
 
-const _textOrNode = c => (typeof c !== 'object') ?
-    document.createTextNode('' + (c == null ? '' : c)) : c;
+export type TextOrNodeCandidate
+    = string |
+    boolean |
+    number |
+    object;
+
+const _textOrNode = (c: TextOrNodeCandidate): Node => {
+
+    if (c instanceof Node)
+        return c;
+
+    if (typeof c === 'object')
+        throw new TypeError(`Cannot use type '${typeof c}' as a Text node!`);
+
+    return document.createTextNode('' + (c == null ? '' : c));
+
+}
 
 export const box = (list: Content[]): Content => {
 
@@ -146,7 +177,7 @@ export const resolve = <A>(head: any, path: string): A | string => {
  * @param {array<string|number|Widget>} children
  * @param {View} view
  */
-export const node = <A>(tag: string, attributes: AttributeMap<A>, children: Content[], view: AppView): Node => {
+export const node = <A, C>(tag: string, attributes: AttributeMap<A>, children: Content[], view: AppView<C>): Node => {
 
     var e = document.createElement(tag);
 
@@ -170,6 +201,12 @@ export const node = <A>(tag: string, attributes: AttributeMap<A>, children: Cont
 
 }
 
+export interface WidgetConstructor<A> {
+
+    new (attributes: Attributes<A>, children: Content[]): Widget;
+
+}
+
 /**
  * widget creates a wml widget.
  * @param {function} Construtor
@@ -179,12 +216,13 @@ export const node = <A>(tag: string, attributes: AttributeMap<A>, children: Cont
  * @return {Widget}
  */
 export const widget =
-    <P, A>(Constructor: { new (...P): P },
-        attributes: AttributeMap<A>,
+    <C, A>(
+        Constructor: WidgetConstructor<A>,
+        attributes: A,
         children: Content[],
-        view: AppView) => {
+        view: AppView<C>): Content => {
 
-        var childs = [];
+        var childs: Content[] = [];
         var w;
 
         children.forEach(child => (child instanceof Array) ?
@@ -259,7 +297,7 @@ export interface SwitchECase {
  * @param {string|number|boolean} value
  * @param {object} cases
  */
-export const switchE = (value: string, cases: SwitchECase[]) => {
+export const switchE = (value: string, cases: SwitchECase) => {
 
     var result = cases[value];
     var defaul = cases['default'];
@@ -270,16 +308,16 @@ export const switchE = (value: string, cases: SwitchECase[]) => {
 
 }
 
-export class AppView implements View {
+export class AppView<C> implements View {
 
     ids: { [key: string]: WMLElement } = {};
     widgets: Widget[] = [];
     tree: Content;
     template: () => Node;
 
-    constructor(public context: object) { }
+    constructor(public context: C) { }
 
-    register(id: string, w: WMLElement): AppView {
+    register(id: string, w: WMLElement): AppView<C> {
 
 
         if (this.ids.hasOwnProperty(id))

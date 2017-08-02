@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var property = require("property-seek");
+var property_seek_1 = require("property-seek");
 ;
 var Component = (function () {
     function Component(attributes, children) {
@@ -17,11 +17,10 @@ exports.Component = Component;
 /**
  * Attributes provides an API for reading the
  * attributes supplied to an Element.
- * @param {object} attrs
  */
 var Attributes = (function () {
-    function Attributes(_attrs) {
-        this._attrs = _attrs;
+    function Attributes(attrs) {
+        this.attrs = attrs;
     }
     Attributes.prototype.has = function (path) {
         return this.read(path) != null;
@@ -32,7 +31,7 @@ var Attributes = (function () {
      * @param {*} defaultValue - This value is returned if the value is not set.
      */
     Attributes.prototype.read = function (path, defaultValue) {
-        var ret = property(path.split(':').join('.'), this._attrs);
+        var ret = property_seek_1.default(path.split(':').join('.'), this.attrs);
         return (ret != null) ? ret : (defaultValue != null) ? defaultValue : '';
     };
     return Attributes;
@@ -45,8 +44,13 @@ var adopt = function (child, e) {
         e.appendChild((typeof child === 'object') ?
             child : document.createTextNode(child == null ? '' : child));
 };
-var _textOrNode = function (c) { return (typeof c !== 'object') ?
-    document.createTextNode('' + (c == null ? '' : c)) : c; };
+var _textOrNode = function (c) {
+    if (c instanceof Node)
+        return c;
+    if (typeof c === 'object')
+        throw new TypeError("Cannot use type '" + typeof c + "' as a Text node!");
+    return document.createTextNode('' + (c == null ? '' : c));
+};
 exports.box = function (list) {
     if (list.length === 1) {
         return _textOrNode(list[0]);
@@ -72,7 +76,7 @@ exports.text = function (value) {
 exports.resolve = function (head, path) {
     if ((head == null) || head == '')
         return '';
-    var ret = property(path, head);
+    var ret = property_seek_1.default(path, head);
     return (ret == null) ? '' : ret;
 };
 /**
