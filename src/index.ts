@@ -61,7 +61,7 @@ export interface AttributeMap<A> {
 
 export interface Attrs {
 
-    wml?: {
+    wml: {
 
         id?: string
 
@@ -123,7 +123,7 @@ const _textOrNode = (c: TextOrNodeCandidate): Node => {
         return c;
 
     if (typeof c === 'object')
-        throw new TypeError(`Cannot use type '${typeof c}' as a Text node!`);
+        throw new TypeError(`Cannot use object ${c.constructor.name} as a child node!`);
 
     return document.createTextNode('' + (c == null ? '' : c));
 
@@ -172,10 +172,6 @@ export const resolve = <A>(head: any, path: string): A | string => {
 
 /**
  * node is called to create a regular DOM node
- * @param {string} tag
- * @param {object} attributes
- * @param {array<string|number|Widget>} children
- * @param {View} view
  */
 export const node = <A, C>(tag: string, attributes: AttributeMap<A>, children: Content[], view: AppView<C>): Node => {
 
@@ -184,18 +180,24 @@ export const node = <A, C>(tag: string, attributes: AttributeMap<A>, children: C
     if (typeof attributes['html'] === 'object')
         Object.keys(attributes['html']).forEach(key => {
 
-            if (typeof attributes['html'][key] === 'function') {
-                e[key] = attributes['html'][key];
-            } else if ((attributes['html'][key] != null) && (attributes['html'][key] != '')) {
-                e.setAttribute(key, attributes['html'][key]);
+            let value = (<any>attributes['html'])[key];
+
+            if (typeof value === 'function') {
+                (<any>e)[key] = value;
+            } else if (typeof value === 'string') {
+
+                if (value !== '') //prevent setting things like disabled=''
+                    e.setAttribute(key, value);
+
             }
         });
 
     children.forEach(c => adopt(c, e));
 
-    if (attributes['wml'])
-        if (attributes['wml']['id'])
-            view.register(attributes['wml']['id'], e);
+    let id = (<any>attributes['wml']).id;
+
+    if (id)
+        view.register(id, e);
 
     return e;
 
@@ -230,9 +232,10 @@ export const widget =
 
         w = new Constructor(new Attributes(attributes), childs);
 
-        if (attributes['wml'])
-            if (attributes['wml']['id'])
-                view.register(attributes['wml']['id'], w);
+        let id = (<Attrs><any>attributes).wml.id;
+
+        if (id)
+            view.register(id, w);
 
         view.widgets.push(w);
         return w.render();
@@ -276,7 +279,7 @@ export const forE = <V>(
         var l = Object.keys(collection);
 
         if (l.length > 0)
-            l.forEach(k => frag.appendChild(cb(collection[k], k, collection)));
+            l.forEach(k => frag.appendChild(cb((<any>collection)[k], k, collection)));
         else
             frag.appendChild(cb2());
 

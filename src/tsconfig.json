@@ -10,6 +10,7 @@
         "noUnusedLocals": true,
         "sourceMap": true,
         "declaration": true,
+        "noImplicitAny": true,
         "typeRoots": ["node_modules/@types"]
     },
     "exclude": ["node_modules"]

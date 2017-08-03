@@ -23,7 +23,7 @@ var Attributes = (function () {
         this.attrs = attrs;
     }
     Attributes.prototype.has = function (path) {
-        return this.read(path) != null;
+        return this.read(path, null) != null;
     };
     /**
      * read a value form the internal list.
@@ -48,7 +48,7 @@ var _textOrNode = function (c) {
     if (c instanceof Node)
         return c;
     if (typeof c === 'object')
-        throw new TypeError("Cannot use type '" + typeof c + "' as a Text node!");
+        throw new TypeError("Cannot use object " + c.constructor.name + " as a child node!");
     return document.createTextNode('' + (c == null ? '' : c));
 };
 exports.box = function (list) {
@@ -81,26 +81,24 @@ exports.resolve = function (head, path) {
 };
 /**
  * node is called to create a regular DOM node
- * @param {string} tag
- * @param {object} attributes
- * @param {array<string|number|Widget>} children
- * @param {View} view
  */
 exports.node = function (tag, attributes, children, view) {
     var e = document.createElement(tag);
     if (typeof attributes['html'] === 'object')
         Object.keys(attributes['html']).forEach(function (key) {
-            if (typeof attributes['html'][key] === 'function') {
-                e[key] = attributes['html'][key];
+            var value = attributes['html'][key];
+            if (typeof value === 'function') {
+                e[key] = value;
             }
-            else if ((attributes['html'][key] != null) && (attributes['html'][key] != '')) {
-                e.setAttribute(key, attributes['html'][key]);
+            else if (typeof value === 'string') {
+                if (value !== '')
+                    e.setAttribute(key, value);
             }
         });
     children.forEach(function (c) { return adopt(c, e); });
-    if (attributes['wml'])
-        if (attributes['wml']['id'])
-            view.register(attributes['wml']['id'], e);
+    var id = attributes['wml'].id;
+    if (id)
+        view.register(id, e);
     return e;
 };
 /**
@@ -117,9 +115,9 @@ exports.widget = function (Constructor, attributes, children, view) {
     children.forEach(function (child) { return (child instanceof Array) ?
         childs.push.apply(childs, child) : childs.push(child); });
     w = new Constructor(new Attributes(attributes), childs);
-    if (attributes['wml'])
-        if (attributes['wml']['id'])
-            view.register(attributes['wml']['id'], w);
+    var id = attributes.wml.id;
+    if (id)
+        view.register(id, w);
     view.widgets.push(w);
     return w.render();
 };

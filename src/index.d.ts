@@ -30,7 +30,7 @@ export interface AttributeMap<A> {
     [key: string]: A;
 }
 export interface Attrs {
-    wml?: {
+    wml: {
         id?: string;
     };
     html: AttributeMap<string | number | boolean | Function>;
@@ -64,10 +64,6 @@ export declare const text: (value: string) => Text;
 export declare const resolve: <A>(head: any, path: string) => string | A;
 /**
  * node is called to create a regular DOM node
- * @param {string} tag
- * @param {object} attributes
- * @param {array<string|number|Widget>} children
- * @param {View} view
  */
 export declare const node: <A, C>(tag: string, attributes: AttributeMap<A>, children: Content[], view: AppView<C>) => Node;
 export interface WidgetConstructor<A> {
