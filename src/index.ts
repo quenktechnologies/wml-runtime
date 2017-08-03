@@ -80,7 +80,7 @@ export class Attributes<A> {
 
     has(path: string): boolean {
 
-        return this.read(path) != null;
+        return this.read(path, null) != null;
 
     }
 
