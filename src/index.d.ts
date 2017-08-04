@@ -52,7 +52,7 @@ export declare class Attributes<A> {
     read<A>(path: string, defaultValue?: A): A;
 }
 export declare const box: (...content: Content[]) => Content;
-export declare const _box: (list: Content[]) => Content;
+export declare const domify: <A>(a: A) => Content;
 export declare const empty: () => DocumentFragment;
 /**
  * text

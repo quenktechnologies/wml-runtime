@@ -52,13 +52,6 @@ var adopt = function (child, e) {
             throw new TypeError("Can not adopt child " + child + " of type " + typeof child);
     }
 };
-var _textOrNode = function (c) {
-    if (c instanceof Node)
-        return c;
-    if (typeof c === 'object')
-        throw new TypeError("Cannot use object " + c.constructor.name + " as a child node!");
-    return document.createTextNode('' + (c == null ? '' : c));
-};
 exports.box = function () {
     var content = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -68,14 +61,23 @@ exports.box = function () {
     content.forEach(function (c) { return frag.appendChild(c); });
     return frag;
 };
-exports._box = function (list) {
-    if (list.length === 1) {
-        return _textOrNode(list[0]);
+exports.domify = function (a) {
+    if (a instanceof Array) {
+        return exports.box.apply(null, a.map(exports.domify));
+    }
+    else if ((typeof a === 'string') ||
+        (typeof a === 'number') ||
+        (typeof a === 'boolean')) {
+        return exports.text(a);
+    }
+    else if (a instanceof Node) {
+        return a;
+    }
+    else if (a == null) {
+        return _empty;
     }
     else {
-        var frag_1 = document.createDocumentFragment();
-        list.forEach(function (c) { return frag_1.appendChild(_textOrNode(c)); });
-        return frag_1;
+        throw new TypeError("Can not use '" + a + "'(typeof " + typeof a + ") as Content!");
     }
 };
 var _empty = document.createDocumentFragment();

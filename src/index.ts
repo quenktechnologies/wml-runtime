@@ -128,18 +128,6 @@ const adopt = (child: Content, e: Node): void => {
 
 };
 
-const _textOrNode = (c: TextOrNodeCandidate): Node => {
-
-    if (c instanceof Node)
-        return c;
-
-    if (typeof c === 'object')
-        throw new TypeError(`Cannot use object ${c.constructor.name} as a child node!`);
-
-    return document.createTextNode('' + (c == null ? '' : c));
-
-}
-
 export const box = (...content: Content[]): Content => {
 
     let frag = document.createDocumentFragment();
@@ -148,17 +136,29 @@ export const box = (...content: Content[]): Content => {
 
 };
 
-export const _box = (list: Content[]): Content => {
+export const domify = <A>(a: A): Content => {
 
-    if (list.length === 1) {
+    if (a instanceof Array) {
+        return box.apply(null, a.map(domify));
 
-        return _textOrNode(list[0]);
+    } else if (
+        (typeof a === 'string') ||
+        (typeof a === 'number') ||
+        (typeof a === 'boolean')) {
+
+        return text(a);
+
+    } else if (a instanceof Node) {
+
+        return a;
+
+    } else if (a == null) {
+
+        return _empty;
 
     } else {
 
-        let frag = document.createDocumentFragment();
-        list.forEach(c => frag.appendChild(_textOrNode(c)));
-        return frag;
+        throw new TypeError(`Can not use '${a}'(typeof ${typeof a}) as Content!`);
 
     }
 
