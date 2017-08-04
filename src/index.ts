@@ -5,19 +5,17 @@ export type Content
     | Element
     | HTMLElement;
 
-export interface ContentProvider {
+export type WMLElement
+    = Content
+    | Widget;
 
-    (): Content
+export type TextOrNodeCandidate
+    = string |
+    boolean |
+    number |
+    object;
 
-}
-
-export interface Macro<P> {
-
-    (view: View, ...p: P[]): Content
-
-}
-
-export type WMLElement = Content | Widget;
+type Iterable<V> = V[] | object;
 
 export interface Renderable {
 
@@ -38,6 +36,18 @@ export interface Widget extends Renderable {
     removed(): void;
 
 };
+
+export interface ContentProvider {
+
+    (): Content
+
+}
+
+export interface Macro<P> {
+
+    (view: View, ...p: P[]): Content
+
+}
 
 export class Component<A> implements Widget {
 
@@ -98,24 +108,25 @@ export class Attributes<A> {
 
 }
 
-
 const adopt = (child: Content, e: Node): void => {
 
-    if (child instanceof Array)
-        return child.forEach(innerChild => adopt(innerChild, e));
+    // if (child instanceof Array)
+    // return child.forEach(innerChild => adopt(innerChild, e));
 
-    if (child)
-        e.appendChild(
-            (typeof child === 'object') ?
-                child : document.createTextNode(child == null ? '' : child));
+    switch (typeof child) {
+        case 'string':
+        case 'number':
+        case 'boolean':
+            e.appendChild(document.createTextNode('' + child));
+        case 'object':
+            e.appendChild(<Node>child);
+            break;
+        default:
+            throw new TypeError(`Can not adopt child ${child} of type ${typeof child}`);
+
+    }
 
 };
-
-export type TextOrNodeCandidate
-    = string |
-    boolean |
-    number |
-    object;
 
 const _textOrNode = (c: TextOrNodeCandidate): Node => {
 
@@ -129,7 +140,15 @@ const _textOrNode = (c: TextOrNodeCandidate): Node => {
 
 }
 
-export const box = (list: Content[]): Content => {
+export const box = (...content: Content[]): Content => {
+
+    let frag = document.createDocumentFragment();
+    content.forEach(c => frag.appendChild(c));
+    return frag;
+
+};
+
+export const _box = (list: Content[]): Content => {
 
     if (list.length === 1) {
 
@@ -152,8 +171,8 @@ export const empty = () => _empty;
 /**
  * text
  */
-export const text = (value: string): Text =>
-    document.createTextNode(value == null ? '' : value);
+export const text = (value: boolean | number | string): Text =>
+    document.createTextNode('' + value);
 
 /**
  * resolve property access expression to avoid
@@ -173,7 +192,11 @@ export const resolve = <A>(head: any, path: string): A | string => {
 /**
  * node is called to create a regular DOM node
  */
-export const node = <A, C>(tag: string, attributes: AttributeMap<A>, children: Content[], view: AppView<C>): Node => {
+export const node = <A, C>(
+    tag: string,
+    attributes: AttributeMap<A>,
+    children: Content[],
+    view: AppView<C>): Node => {
 
     var e = document.createElement(tag);
 
@@ -248,12 +271,9 @@ export const widget =
 export const ifE = <P>(predicate: P, positive: () => Content, negative: () => Content) =>
     (predicate) ? positive() : negative();
 
-
-type Iterable<V> = V[] | object;
-
 export interface ForECallback<V> {
 
-    (value: V, index: string | number, source: V[] | object): Content;
+    (value: V, index?: string | number, source?: V[] | object): Content;
 
 }
 

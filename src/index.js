@@ -38,11 +38,19 @@ var Attributes = (function () {
 }());
 exports.Attributes = Attributes;
 var adopt = function (child, e) {
-    if (child instanceof Array)
-        return child.forEach(function (innerChild) { return adopt(innerChild, e); });
-    if (child)
-        e.appendChild((typeof child === 'object') ?
-            child : document.createTextNode(child == null ? '' : child));
+    // if (child instanceof Array)
+    // return child.forEach(innerChild => adopt(innerChild, e));
+    switch (typeof child) {
+        case 'string':
+        case 'number':
+        case 'boolean':
+            e.appendChild(document.createTextNode('' + child));
+        case 'object':
+            e.appendChild(child);
+            break;
+        default:
+            throw new TypeError("Can not adopt child " + child + " of type " + typeof child);
+    }
 };
 var _textOrNode = function (c) {
     if (c instanceof Node)
@@ -51,7 +59,16 @@ var _textOrNode = function (c) {
         throw new TypeError("Cannot use object " + c.constructor.name + " as a child node!");
     return document.createTextNode('' + (c == null ? '' : c));
 };
-exports.box = function (list) {
+exports.box = function () {
+    var content = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        content[_i] = arguments[_i];
+    }
+    var frag = document.createDocumentFragment();
+    content.forEach(function (c) { return frag.appendChild(c); });
+    return frag;
+};
+exports._box = function (list) {
     if (list.length === 1) {
         return _textOrNode(list[0]);
     }
@@ -67,7 +84,7 @@ exports.empty = function () { return _empty; };
  * text
  */
 exports.text = function (value) {
-    return document.createTextNode(value == null ? '' : value);
+    return document.createTextNode('' + value);
 };
 /**
  * resolve property access expression to avoid

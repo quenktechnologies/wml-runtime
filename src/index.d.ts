@@ -1,11 +1,6 @@
 export declare type Content = Node | Element | HTMLElement;
-export interface ContentProvider {
-    (): Content;
-}
-export interface Macro<P> {
-    (view: View, ...p: P[]): Content;
-}
 export declare type WMLElement = Content | Widget;
+export declare type TextOrNodeCandidate = string | boolean | number | object;
 export interface Renderable {
     render(): Content;
 }
@@ -16,6 +11,12 @@ export interface View extends Renderable {
 export interface Widget extends Renderable {
     rendered(): void;
     removed(): void;
+}
+export interface ContentProvider {
+    (): Content;
+}
+export interface Macro<P> {
+    (view: View, ...p: P[]): Content;
 }
 export declare class Component<A> implements Widget {
     attributes: Attributes<A>;
@@ -50,13 +51,13 @@ export declare class Attributes<A> {
      */
     read<A>(path: string, defaultValue?: A): A;
 }
-export declare type TextOrNodeCandidate = string | boolean | number | object;
-export declare const box: (list: Content[]) => Content;
+export declare const box: (...content: Content[]) => Content;
+export declare const _box: (list: Content[]) => Content;
 export declare const empty: () => DocumentFragment;
 /**
  * text
  */
-export declare const text: (value: string) => Text;
+export declare const text: (value: string | number | boolean) => Text;
 /**
  * resolve property access expression to avoid
  * thowing errors if it does not exist.
@@ -83,7 +84,7 @@ export declare const widget: <C, A>(Constructor: WidgetConstructor<A>, attribute
  */
 export declare const ifE: <P>(predicate: P, positive: () => Content, negative: () => Content) => Node;
 export interface ForECallback<V> {
-    (value: V, index: string | number, source: V[] | object): Content;
+    (value: V, index?: string | number, source?: V[] | object): Content;
 }
 /**
  * forE provides a for expression
