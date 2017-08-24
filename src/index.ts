@@ -73,7 +73,8 @@ export interface Attrs {
 
     wml: {
 
-        id?: string
+        id?: string,
+        group?: string
 
     },
     html: AttributeMap<string | number | boolean | Function>

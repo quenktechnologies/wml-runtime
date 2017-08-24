@@ -33,6 +33,7 @@ export interface AttributeMap<A> {
 export interface Attrs {
     wml: {
         id?: string;
+        group?: string;
     };
     html: AttributeMap<string | number | boolean | Function>;
 }
