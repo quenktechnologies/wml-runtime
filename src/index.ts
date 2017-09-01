@@ -27,6 +27,7 @@ export interface View extends Renderable {
 
     invalidate(): void;
     findById(id: string): WMLElement;
+    findGroupByName(name: string): WMLElement[];
 
 }
 
@@ -219,9 +220,13 @@ export const node = <A, C>(
     children.forEach(c => adopt(c, e));
 
     let id = (<any>attributes['wml']).id;
+    let group = (<Attrs><any>attributes).wml.group;
 
     if (id)
         view.register(id, e);
+
+    if (group)
+        view.registerGroup(group, e);
 
     return e;
 
@@ -257,11 +262,16 @@ export const widget =
         w = new Constructor(new Attributes(attributes), childs);
 
         let id = (<Attrs><any>attributes).wml.id;
+        let group = (<Attrs><any>attributes).wml.group;
 
         if (id)
             view.register(id, w);
 
+        if (group)
+            view.registerGroup(group, w);
+
         view.widgets.push(w);
+
         return w.render();
 
     }
@@ -335,6 +345,7 @@ export const switchE = (value: string, cases: SwitchECase) => {
 export class AppView<C> implements View {
 
     ids: { [key: string]: WMLElement } = {};
+    groups: { [key: string]: WMLElement[] } = {};
     widgets: Widget[] = [];
     tree: Content;
     template: () => Node;
@@ -343,11 +354,20 @@ export class AppView<C> implements View {
 
     register(id: string, w: WMLElement): AppView<C> {
 
-
         if (this.ids.hasOwnProperty(id))
             throw new Error(`Duplicate id '${id}' detected!`);
 
         this.ids[id] = w;
+
+        return this;
+
+    }
+
+    registerGroup(group: string, e: WMLElement): AppView<C> {
+
+        this.groups[group] = this.groups[group] || [];
+        this.groups[group].push(e);
+
         return this;
 
     }
@@ -355,6 +375,12 @@ export class AppView<C> implements View {
     findById(id: string): WMLElement {
 
         return (this.ids[id]) ? this.ids[id] : null;
+
+    }
+
+    findGroupByName(name:string) : WMLElement[] {
+
+      return (this.groups.hasOwnProperty(name)) ? this.groups[name] : [];
 
     }
 

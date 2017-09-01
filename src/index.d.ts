@@ -7,6 +7,7 @@ export interface Renderable {
 export interface View extends Renderable {
     invalidate(): void;
     findById(id: string): WMLElement;
+    findGroupByName(name: string): WMLElement[];
 }
 export interface Widget extends Renderable {
     rendered(): void;
@@ -105,12 +106,17 @@ export declare class AppView<C> implements View {
     ids: {
         [key: string]: WMLElement;
     };
+    groups: {
+        [key: string]: WMLElement[];
+    };
     widgets: Widget[];
     tree: Content;
     template: () => Node;
     constructor(context: C);
     register(id: string, w: WMLElement): AppView<C>;
+    registerGroup(group: string, e: WMLElement): AppView<C>;
     findById(id: string): WMLElement;
+    findGroupByName(name: string): WMLElement[];
     invalidate(): void;
     render(): Content;
 }

@@ -116,8 +116,11 @@ exports.node = function (tag, attributes, children, view) {
         });
     children.forEach(function (c) { return adopt(c, e); });
     var id = attributes['wml'].id;
+    var group = attributes.wml.group;
     if (id)
         view.register(id, e);
+    if (group)
+        view.registerGroup(group, e);
     return e;
 };
 /**
@@ -135,8 +138,11 @@ exports.widget = function (Constructor, attributes, children, view) {
         childs.push.apply(childs, child) : childs.push(child); });
     w = new Constructor(new Attributes(attributes), childs);
     var id = attributes.wml.id;
+    var group = attributes.wml.group;
     if (id)
         view.register(id, w);
+    if (group)
+        view.registerGroup(group, w);
     view.widgets.push(w);
     return w.render();
 };
@@ -183,6 +189,7 @@ var AppView = (function () {
     function AppView(context) {
         this.context = context;
         this.ids = {};
+        this.groups = {};
         this.widgets = [];
     }
     AppView.prototype.register = function (id, w) {
@@ -191,8 +198,16 @@ var AppView = (function () {
         this.ids[id] = w;
         return this;
     };
+    AppView.prototype.registerGroup = function (group, e) {
+        this.groups[group] = this.groups[group] || [];
+        this.groups[group].push(e);
+        return this;
+    };
     AppView.prototype.findById = function (id) {
         return (this.ids[id]) ? this.ids[id] : null;
+    };
+    AppView.prototype.findGroupByName = function (name) {
+        return (this.groups.hasOwnProperty(name)) ? this.groups[name] : [];
     };
     AppView.prototype.invalidate = function () {
         var childs;
