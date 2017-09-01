@@ -214,7 +214,12 @@ export const node = <A, C>(
                 if (value !== '') //prevent setting things like disabled=''
                     e.setAttribute(key, value);
 
+            } else if (typeof value === 'boolean') {
+
+                e.setAttribute(key, `${value}`);
+
             }
+
         });
 
     children.forEach(c => adopt(c, e));
@@ -378,9 +383,9 @@ export class AppView<C> implements View {
 
     }
 
-    findGroupByName(name:string) : WMLElement[] {
+    findGroupByName(name: string): WMLElement[] {
 
-      return (this.groups.hasOwnProperty(name)) ? this.groups[name] : [];
+        return (this.groups.hasOwnProperty(name)) ? this.groups[name] : [];
 
     }
 

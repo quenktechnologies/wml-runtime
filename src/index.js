@@ -113,6 +113,9 @@ exports.node = function (tag, attributes, children, view) {
                 if (value !== '')
                     e.setAttribute(key, value);
             }
+            else if (typeof value === 'boolean') {
+                e.setAttribute(key, "" + value);
+            }
         });
     children.forEach(function (c) { return adopt(c, e); });
     var id = attributes['wml'].id;
