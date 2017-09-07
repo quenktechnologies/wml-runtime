@@ -214,10 +214,10 @@ var AppView = (function () {
     };
     AppView.prototype.invalidate = function () {
         var childs;
-        var parent = this.tree.parentNode;
         var realFirstChild;
         var realFirstChildIndex;
         var tree = (this._fragRoot) ? this._fragRoot : this.tree;
+        var parent = tree.parentNode;
         if (tree == null)
             throw new ReferenceError('Cannot invalidate a view that has not been rendered!');
         if (tree.parentNode == null)

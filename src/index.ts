@@ -354,7 +354,7 @@ export class AppView<C> implements View {
     widgets: Widget[] = [];
     tree: Content;
     template: () => Node;
-  _fragRoot: Node;
+    _fragRoot: Node;
 
     constructor(public context: C) { }
 
@@ -393,10 +393,10 @@ export class AppView<C> implements View {
     invalidate(): void {
 
         var childs;
-        var parent = this.tree.parentNode;
         var realFirstChild;
         var realFirstChildIndex;
-      var tree = (this._fragRoot) ? this._fragRoot : this.tree;
+        var tree = (this._fragRoot) ? this._fragRoot : this.tree;
+        var parent = tree.parentNode;
 
         if (tree == null)
             throw new ReferenceError('Cannot invalidate a view that has not been rendered!');
@@ -423,14 +423,14 @@ export class AppView<C> implements View {
         this.ids = {};
         this.widgets.forEach(w => w.removed());
         this.widgets = [];
-      this._fragRoot = null;
+        this._fragRoot = null;
         this.tree = this.template.call(this.context);
         this.ids['root'] = (this.ids['root']) ? this.ids['root'] : this.tree;
 
-        if(this.tree.nodeName === (document.createDocumentFragment()).nodeName)
-        this._fragRoot = this.tree.firstChild;
-      
-      this.widgets.forEach(w => w.rendered());
+        if (this.tree.nodeName === (document.createDocumentFragment()).nodeName)
+            this._fragRoot = this.tree.firstChild;
+
+        this.widgets.forEach(w => w.rendered());
 
         return this.tree;
 
