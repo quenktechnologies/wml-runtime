@@ -354,6 +354,7 @@ export class AppView<C> implements View {
     widgets: Widget[] = [];
     tree: Content;
     template: () => Node;
+  _fragRoot: Node;
 
     constructor(public context: C) { }
 
@@ -395,19 +396,20 @@ export class AppView<C> implements View {
         var parent = this.tree.parentNode;
         var realFirstChild;
         var realFirstChildIndex;
+      var tree = (this._fragRoot) ? this._fragRoot : this.tree;
 
-        if (this.tree == null)
+        if (tree == null)
             throw new ReferenceError('Cannot invalidate a view that has not been rendered!');
 
-        if (this.tree.parentNode == null)
+        if (tree.parentNode == null)
             throw new ReferenceError('Attempt to invalidate a view that has not been inserted to DOM!');
 
-        childs = (<Element>this.tree.parentNode).children;
+        childs = (<Element>tree.parentNode).children;
 
         //for some reason the reference stored does not have the correct parent node.
         //we do this to get a 'live' version of the node.
         for (let i = 0; i < childs.length; i++)
-            if (childs[i] === this.tree) {
+            if (childs[i] === tree) {
                 realFirstChild = childs[i];
                 realFirstChildIndex = i;
             }
@@ -421,9 +423,14 @@ export class AppView<C> implements View {
         this.ids = {};
         this.widgets.forEach(w => w.removed());
         this.widgets = [];
+      this._fragRoot = null;
         this.tree = this.template.call(this.context);
         this.ids['root'] = (this.ids['root']) ? this.ids['root'] : this.tree;
-        this.widgets.forEach(w => w.rendered());
+
+        if(this.tree.nodeName === (document.createDocumentFragment()).nodeName)
+        this._fragRoot = this.tree.firstChild;
+      
+      this.widgets.forEach(w => w.rendered());
 
         return this.tree;
 

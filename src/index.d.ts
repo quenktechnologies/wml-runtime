@@ -112,6 +112,7 @@ export declare class AppView<C> implements View {
     widgets: Widget[];
     tree: Content;
     template: () => Node;
+    _fragRoot: Node;
     constructor(context: C);
     register(id: string, w: WMLElement): AppView<C>;
     registerGroup(group: string, e: WMLElement): AppView<C>;

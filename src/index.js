@@ -217,15 +217,16 @@ var AppView = (function () {
         var parent = this.tree.parentNode;
         var realFirstChild;
         var realFirstChildIndex;
-        if (this.tree == null)
+        var tree = (this._fragRoot) ? this._fragRoot : this.tree;
+        if (tree == null)
             throw new ReferenceError('Cannot invalidate a view that has not been rendered!');
-        if (this.tree.parentNode == null)
+        if (tree.parentNode == null)
             throw new ReferenceError('Attempt to invalidate a view that has not been inserted to DOM!');
-        childs = this.tree.parentNode.children;
+        childs = tree.parentNode.children;
         //for some reason the reference stored does not have the correct parent node.
         //we do this to get a 'live' version of the node.
         for (var i = 0; i < childs.length; i++)
-            if (childs[i] === this.tree) {
+            if (childs[i] === tree) {
                 realFirstChild = childs[i];
                 realFirstChildIndex = i;
             }
@@ -235,8 +236,11 @@ var AppView = (function () {
         this.ids = {};
         this.widgets.forEach(function (w) { return w.removed(); });
         this.widgets = [];
+        this._fragRoot = null;
         this.tree = this.template.call(this.context);
         this.ids['root'] = (this.ids['root']) ? this.ids['root'] : this.tree;
+        if (this.tree.nodeName === (document.createDocumentFragment()).nodeName)
+            this._fragRoot = this.tree.firstChild;
         this.widgets.forEach(function (w) { return w.rendered(); });
         return this.tree;
     };
