@@ -1,6 +1,6 @@
 {
   "name": "@quenk/wml-runtime",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Runtime for compiled wml files.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -14,7 +14,7 @@
   "author": "Lasana Murray <info@quenk.com> (http://quenk.com)",
   "license": "Apache-2.0",
   "peerDependencies": {
-    "@quenk/wml":"^0.14.0"
+    "@quenk/wml": "^0.14.0"
   },
   "dependencies": {
     "property-seek": "^3.0.13"
