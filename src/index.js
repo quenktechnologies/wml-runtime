@@ -237,7 +237,7 @@ var AppView = (function () {
         this.widgets.forEach(function (w) { return w.removed(); });
         this.widgets = [];
         this._fragRoot = null;
-        this.tree = this.template.call(this.context);
+        this.tree = this.template(this.context);
         this.ids['root'] = (this.ids['root']) ? this.ids['root'] : this.tree;
         if (this.tree.nodeName === (document.createDocumentFragment()).nodeName)
             this._fragRoot = this.tree.firstChild;

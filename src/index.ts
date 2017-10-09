@@ -353,7 +353,7 @@ export class AppView<C> implements View {
     groups: { [key: string]: WMLElement[] } = {};
     widgets: Widget[] = [];
     tree: Content;
-    template: () => Node;
+  template: (c:C) => Node;
     _fragRoot: Node;
 
     constructor(public context: C) { }
@@ -424,7 +424,7 @@ export class AppView<C> implements View {
         this.widgets.forEach(w => w.removed());
         this.widgets = [];
         this._fragRoot = null;
-        this.tree = this.template.call(this.context);
+        this.tree = this.template(this.context);
         this.ids['root'] = (this.ids['root']) ? this.ids['root'] : this.tree;
 
         if (this.tree.nodeName === (document.createDocumentFragment()).nodeName)
