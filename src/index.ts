@@ -59,7 +59,7 @@ export interface View extends Renderable {
      * findById retrives a WMLElement that has been assigned a `wml:id` 
      * attribute matching id.
      */
-    findById(id: string): WMLElement;
+    findById<A extends WMLElement>(id: string): A;
 
     /**
      * findGroupByName retrives an array of WMLElements that have a `wml:group`
