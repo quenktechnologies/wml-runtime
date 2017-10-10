@@ -30,8 +30,9 @@ exports.Component = Component;
  *
  * This is an alternative to regular property access that will throw exceptions
  * if any of the values in the part are null.
- * @param {string} path
- * @param {*} defaultValue - This value is returned if the value is not set.
+ * @param {string} path - The path to look up on the object.
+ * @param {object} o - The object
+ * @param {A} [defaultValue] - This value is returned if the value is not set.
  * @private
  */
 exports.read = function (path, o, defaultValue) {
