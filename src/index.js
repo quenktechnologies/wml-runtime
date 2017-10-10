@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var property = require("property-seek");
+var Maybe_1 = require("afpl/lib/monad/Maybe");
 ;
 /**
  * Component is an abstract Widget implementation
@@ -223,10 +224,10 @@ var AppView = (function () {
         return this;
     };
     AppView.prototype.findById = function (id) {
-        return (this.ids[id]) ? this.ids[id] : null;
+        return Maybe_1.Maybe.fromAny(this.ids[id]);
     };
     AppView.prototype.findGroupByName = function (name) {
-        return (this.groups.hasOwnProperty(name)) ? this.groups[name] : [];
+        return Maybe_1.Maybe.fromArray(this.groups[name]);
     };
     AppView.prototype.invalidate = function () {
         var childs;

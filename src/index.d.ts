@@ -1,3 +1,11 @@
+import { Maybe } from 'afpl/lib/monad/Maybe';
+/**
+ * Maybe from afpl used here as an option type.
+ *
+ * Limit usage of this class to the monad map, chain and orElse for now.
+ * It is subject to change.
+ */
+export declare type Maybe<A> = Maybe<A>;
 /**
  * WMLElement can be DOM content or a user defined widget.
  */
@@ -37,13 +45,17 @@ export interface View extends Renderable {
     /**
      * findById retrives a WMLElement that has been assigned a `wml:id`
      * attribute matching id.
+     *
+     * Returns a Maybe type from the afpl library.
      */
-    findById<A extends WMLElement>(id: string): A;
+    findById<A extends WMLElement>(id: string): Maybe<A>;
     /**
      * findGroupByName retrives an array of WMLElements that have a `wml:group`
      * attribute matching name.
+     *
+     * Returns a Maybe type from the afpl library.
      */
-    findGroupByName(name: string): WMLElement[];
+    findGroupByName(name: string): Maybe<WMLElement[]>;
 }
 /**
  *
@@ -215,8 +227,8 @@ export declare class AppView<C> implements View {
     constructor(context: C);
     register(id: string, w: WMLElement): AppView<C>;
     registerGroup(group: string, e: WMLElement): AppView<C>;
-    findById<A extends WMLElement>(id: string): A;
-    findGroupByName(name: string): WMLElement[];
+    findById<A extends WMLElement>(id: string): Maybe<A>;
+    findGroupByName(name: string): Maybe<WMLElement[]>;
     invalidate(): void;
     render(): Content;
 }

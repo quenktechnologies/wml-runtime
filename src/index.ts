@@ -1,4 +1,13 @@
 import * as property from 'property-seek';
+import { Maybe } from 'afpl/lib/monad/Maybe';
+
+/**
+ * Maybe from afpl used here as an option type.
+ *
+ * Limit usage of this class to the monad map, chain and orElse for now.
+ * It is subject to change.
+ */
+export type Maybe<A> = Maybe<A>;
 
 /**
  * WMLElement can be DOM content or a user defined widget. 
@@ -58,14 +67,18 @@ export interface View extends Renderable {
     /**
      * findById retrives a WMLElement that has been assigned a `wml:id` 
      * attribute matching id.
+     *
+     * Returns a Maybe type from the afpl library.
      */
-    findById<A extends WMLElement>(id: string): A;
+    findById<A extends WMLElement>(id: string): Maybe<A>;
 
     /**
      * findGroupByName retrives an array of WMLElements that have a `wml:group`
      * attribute matching name.
+     *
+     * Returns a Maybe type from the afpl library.
      */
-    findGroupByName(name: string): WMLElement[];
+    findGroupByName(name: string): Maybe<WMLElement[]>;
 
 }
 
@@ -466,15 +479,15 @@ export class AppView<C> implements View {
 
     }
 
-    findById<A extends WMLElement>(id: string): A {
+    findById<A extends WMLElement>(id: string): Maybe<A> {
 
-        return (this.ids[id]) ? <A>this.ids[id] : null;
+        return Maybe.fromAny<A>(<A>this.ids[id]);
 
     }
 
-    findGroupByName(name: string): WMLElement[] {
+    findGroupByName(name: string): Maybe<WMLElement[]> {
 
-        return (this.groups.hasOwnProperty(name)) ? this.groups[name] : [];
+        return Maybe.fromArray(this.groups[name]);
 
     }
 
