@@ -1,10 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_seek_1 = require("property-seek");
+var property = require("property-seek");
 ;
+/**
+ * Component is an abstract Widget implementation
+ * that can be used instead of manually implementing the whole interface.
+ *
+ */
 var Component = (function () {
-    function Component(attributes, children) {
-        this.attributes = attributes;
+    /**
+     * attrs is the attributes this Component excepts.
+     */
+    /**
+     * children is an array of content passed to this Component.
+     */
+    function Component(attrs, children) {
+        this.attrs = attrs;
         this.children = children;
     }
     Component.prototype.rendered = function () { };
@@ -15,31 +26,22 @@ var Component = (function () {
 exports.Component = Component;
 ;
 /**
- * Attributes provides an API for reading the
- * attributes supplied to an Element.
+ * read a value form an object.
+ *
+ * This is an alternative to regular property access that will throw exceptions
+ * if any of the values in the part are null.
+ * @param {string} path
+ * @param {*} defaultValue - This value is returned if the value is not set.
+ * @private
  */
-var Attributes = (function () {
-    function Attributes(attrs) {
-        this.attrs = attrs;
-    }
-    Attributes.prototype.has = function (path) {
-        return this.read(path, null) != null;
-    };
-    /**
-     * read a value form the internal list.
-     * @param {string} path
-     * @param {*} defaultValue - This value is returned if the value is not set.
-     */
-    Attributes.prototype.read = function (path, defaultValue) {
-        var ret = property_seek_1.default(path.split(':').join('.'), this.attrs);
-        return (ret != null) ? ret : (defaultValue != null) ? defaultValue : '';
-    };
-    return Attributes;
-}());
-exports.Attributes = Attributes;
+exports.read = function (path, o, defaultValue) {
+    var ret = property.get(path.split(':').join('.'), o);
+    return (ret != null) ? ret : defaultValue;
+};
+/**
+ * @private
+ */
 var adopt = function (child, e) {
-    // if (child instanceof Array)
-    // return child.forEach(innerChild => adopt(innerChild, e));
     switch (typeof child) {
         case 'string':
         case 'number':
@@ -52,6 +54,9 @@ var adopt = function (child, e) {
             throw new TypeError("Can not adopt child " + child + " of type " + typeof child);
     }
 };
+/**
+ * @private
+ */
 exports.box = function () {
     var content = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -61,6 +66,9 @@ exports.box = function () {
     content.forEach(function (c) { return frag.appendChild(c); });
     return frag;
 };
+/**
+ * @private
+ */
 exports.domify = function (a) {
     if (a instanceof Array) {
         return exports.box.apply(null, a.map(exports.domify));
@@ -80,26 +88,24 @@ exports.domify = function (a) {
         throw new TypeError("Can not use '" + a + "'(typeof " + typeof a + ") as Content!");
     }
 };
+/**
+ * @private
+ */
 var _empty = document.createDocumentFragment();
+/**
+ * @private
+ */
 exports.empty = function () { return _empty; };
 /**
- * text
+ * text creates a new TextNode.
+ * @private
  */
 exports.text = function (value) {
     return document.createTextNode('' + value);
 };
 /**
- * resolve property access expression to avoid
- * thowing errors if it does not exist.
- */
-exports.resolve = function (head, path) {
-    if ((head == null) || head == '')
-        return '';
-    var ret = property_seek_1.default(path, head);
-    return (ret == null) ? '' : ret;
-};
-/**
  * node is called to create a regular DOM node
+ * @private
  */
 exports.node = function (tag, attributes, children, view) {
     var e = document.createElement(tag);
@@ -127,11 +133,12 @@ exports.node = function (tag, attributes, children, view) {
     return e;
 };
 /**
- * widget creates a wml widget.
+ * widget creates and renders a new wml widget instance.
  * @param {function} Construtor
  * @param {object} attributes
  * @param {array<string|number|Widget>} children
  * @param {View} view
+ * @private
  * @return {Widget}
  */
 exports.widget = function (Constructor, attributes, children, view) {
@@ -139,7 +146,7 @@ exports.widget = function (Constructor, attributes, children, view) {
     var w;
     children.forEach(function (child) { return (child instanceof Array) ?
         childs.push.apply(childs, child) : childs.push(child); });
-    w = new Constructor(new Attributes(attributes), childs);
+    w = new Constructor(attributes, childs);
     var id = attributes.wml.id;
     var group = attributes.wml.group;
     if (id)
@@ -151,12 +158,14 @@ exports.widget = function (Constructor, attributes, children, view) {
 };
 /**
  * ifE provides an if then expression
+ * @private
  */
 exports.ifE = function (predicate, positive, negative) {
     return (predicate) ? positive() : negative();
 };
 /**
  * forE provides a for expression
+ * @private
  */
 exports.forE = function (collection, cb, cb2) {
     var frag = document.createDocumentFragment();
@@ -179,6 +188,7 @@ exports.forE = function (collection, cb, cb2) {
  * switchE simulates a switch statement
  * @param {string|number|boolean} value
  * @param {object} cases
+ * @private
  */
 exports.switchE = function (value, cases) {
     var result = cases[value];
@@ -188,6 +198,11 @@ exports.switchE = function (value, cases) {
     if (defaul)
         return defaul;
 };
+/**
+ * AppView is the concrete implementation of a View.
+ *
+ * @property {<C>} context - The context the view is rendered in.
+ */
 var AppView = (function () {
     function AppView(context) {
         this.context = context;
@@ -237,7 +252,7 @@ var AppView = (function () {
         this.widgets.forEach(function (w) { return w.removed(); });
         this.widgets = [];
         this._fragRoot = null;
-        this.tree = this.template(this.context);
+        this.tree = this.template(this, this.context);
         this.ids['root'] = (this.ids['root']) ? this.ids['root'] : this.tree;
         if (this.tree.nodeName === (document.createDocumentFragment()).nodeName)
             this._fragRoot = this.tree.firstChild;

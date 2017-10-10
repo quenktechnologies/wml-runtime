@@ -6,7 +6,8 @@
   "types": "src/index.d.ts",
   "repository": "https://github.com/quenktechnologies/wml-runtime.git",
   "scripts": {
-    "build": "./node_modules/.bin/tsc --sourceMap --project src"
+    "build": "./node_modules/.bin/tsc --sourceMap --project src",
+    "docs": "cd src; ../node_modules/.bin/typedoc --out ../docs .; cd .."
   },
   "keywords": [
     "wml"
@@ -17,7 +18,7 @@
     "@quenk/wml": "^0.14.0"
   },
   "dependencies": {
-    "property-seek": "^3.0.13"
+    "property-seek": "^3.1.1"
   },
   "devDependencies": {
     "typescript": "^2.4.2"
