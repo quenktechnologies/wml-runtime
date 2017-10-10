@@ -120,9 +120,9 @@ export class Component<A extends Attrs> implements Widget {
      * attrs is the attributes this Component excepts.
      */
 
-  /**
-   * children is an array of content passed to this Component.
-   */
+    /**
+     * children is an array of content passed to this Component.
+     */
 
     constructor(public attrs: A, public children: Content[]) { }
 
@@ -466,9 +466,9 @@ export class AppView<C> implements View {
 
     }
 
-    findById(id: string): WMLElement {
+    findById<A extends WMLElement>(id: string): A {
 
-        return (this.ids[id]) ? this.ids[id] : null;
+        return (this.ids[id]) ? <A>this.ids[id] : null;
 
     }
 

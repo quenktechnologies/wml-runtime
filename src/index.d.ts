@@ -215,7 +215,7 @@ export declare class AppView<C> implements View {
     constructor(context: C);
     register(id: string, w: WMLElement): AppView<C>;
     registerGroup(group: string, e: WMLElement): AppView<C>;
-    findById(id: string): WMLElement;
+    findById<A extends WMLElement>(id: string): A;
     findGroupByName(name: string): WMLElement[];
     invalidate(): void;
     render(): Content;
