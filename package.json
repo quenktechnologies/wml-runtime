@@ -1,6 +1,6 @@
 {
   "name": "@quenk/wml-runtime",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Runtime for compiled wml files.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
